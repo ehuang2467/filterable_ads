@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './App.css';
 
 const ads_json = [{
@@ -11,46 +12,59 @@ const ads_json = [{
 
 
 function Filterable_Ads() {
+  const [ad_type, adtype_changer] = useState("BuyOrSell")
+  const [search_text, search_text_changer] = useState("")
   return (
     <div className='filterable_ads'>
-      <AdType_Selector />
-      <SearchBar />
-      <AdsList ads={ads_json} />
+      <AdType_Selector changer={adtype_changer} />
+      <SearchBar changer={search_text_changer} />
+      <AdsList ads={ads_json} ad_type={ad_type} search_text={search_text} />
     </div>
   )
 
 }
 
-function AdType_Selector() {
+function AdType_Selector({ changer }) {
+
   return (
     <div className='adtype_selector'>
-      <select>
-        <option>Buy</option>
-        <option>Sell</option>
+      <select onChange={(event) => changer(event.target.value)}>
+        <option value="BuyOrSell">Buy or Sell</option>
+        <option value="Buy">Buy</option>
+        <option value="Sell">Sell</option>
       </select>
-    </div>
+    </div >
   )
 
 }
 
-function SearchBar() {
+function SearchBar({ changer }) {
   return (
     <div className='search_bar'>
       <label>Search:</label>
-      <input type="text"></input>
+      <input type="text" onChange={(event) => changer(event.target.value)}></input>
     </div>
   )
 
 }
 
-function AdsList({ ads }) {
+function AdsList({ ads, ad_type, search_text }) {
+
+  function ad_filter(ad) {
+    return ((ad_type.toUpperCase() == "BuyOrSell".toUpperCase() ||
+      ad_type.toUpperCase() == ad.ad_type.toUpperCase()) &&
+      (search_text == "" || ad.text.includes(search_text)))
+  }
+
+
+  let ads_filtered = ads.filter((ad) => ad_filter(ad))
   function ad_json_unpacker(ad) {
     return ad.ad_type + ": " + ad.text + ". Posted by " + ad.user + " on " + ad.date
   }
   function ad_json_key(ad) {
     return ad.user + ad.text
   }
-  let lis = ads.map((item) => <li key={ad_json_key(item)}>{ad_json_unpacker(item)}</li>)
+  let lis = ads_filtered.map((item) => <li key={ad_json_key(item)}>{ad_json_unpacker(item)}</li>)
   return (
     <div className='ads_list'>
       <ul>{lis}</ul>
